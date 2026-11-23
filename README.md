@@ -12,8 +12,8 @@ results with policy section references.
 
 | What | Where |
 |---|---|
-| Source code | GITHUB_REPO_URL |
-| Demo video | VIDEO_URL |
+| Source code | https://github.com/emir-ertunc/tuition-assistant |
+| Demo video | VIDEO_URL (to be added) |
 | API Gateway (all REST calls) | https://tuition-apim-ee7141.azure-api.net/api/v1 |
 | Swagger UI of the Tuition API | https://tuition-api-ee7141.azurewebsites.net/docs |
 | OpenAPI specification | https://tuition-api-ee7141.azurewebsites.net/openapi.json |
