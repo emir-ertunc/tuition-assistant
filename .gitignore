@@ -1,0 +1,24 @@
+# python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+
+# virtual envs
+.venv/
+venv/
+
+# secrets
+.env
+*.env
+!.env.example
+
+# editors / os
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# azure deploy zips
+*.zip

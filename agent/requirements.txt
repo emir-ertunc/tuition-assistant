@@ -1,0 +1,7 @@
+google-genai
+mcp>=2
+httpx
+python-dotenv
+
+# testing
+pytest

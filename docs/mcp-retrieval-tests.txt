@@ -1,0 +1,82 @@
+MCP retrieval tests - tuition policy search
+Date (UTC): 2026-11-23 20:18
+Server: http://127.0.0.1:8001/mcp (streamable HTTP)
+Tool: search_tuition_policies
+==============================================================================
+Tools on server: search_tuition_policies
+
+Test 1: Payment deadline
+  query:    'What is the payment deadline for the Fall term?'
+  document: University_Tuition_Policies.md (UNI-TUITION-2026-01)
+  expected: section 2.1  ->  PASS
+  #1 section 2.1 - Fall term (Payment deadlines), score 9.2023
+       The payment deadline for the Fall 2026 term is September 30,
+       2026. A student should settle the outstanding balance or have
+       an approved installment arrangement by that date.
+  #2 section 2.2 - Spring term (Payment deadlines), score 6.5442
+       The payment deadline for the Spring 2027 term is February 15,
+       2027. Deadlines apply in the university's local time zone.
+  #3 section 8.1 - When is the Fall tuition deadline? (Frequently asked questions), score 5.8618
+       September 30, 2026. See Section 2.1.
+------------------------------------------------------------------------------
+Test 2: Installments
+  query:    'How many installments can I split my tuition balance into?'
+  document: University_Tuition_Policies.md (UNI-TUITION-2026-01)
+  expected: section 3.x  ->  PASS
+  #1 section 8.2 - Can I pay my balance in three installments? (Frequently asked questions), score 4.0299
+       The policy permits up to three installments for eligible
+       balances, subject to approval. Check the live balance through
+       the Tuition Query API and see Sections 3.1–3.4.
+  #2 section 3.2 - Number and size of installments (Installment policy), score 3.4885
+       An approved balance may be divided into up to three
+       installments. Installments should be equal where possible; any
+       rounding difference is added to the final installment. For
+       example, a $3,000 balance can be divided into three payments of
+       $1,000.
+  #3 section 3.4 - Partial payments versus installment approval (Installment policy), score 3.1544
+       The payment API can record a partial payment and retain the
+       remaining balance. A partial payment is not, by itself,
+       approval of an installment plan. The AI assistant must not
+       promise approval based solely on the policy document or a
+       balance lookup.
+------------------------------------------------------------------------------
+Test 3: Refund
+  query:    'Do I get a refund if I withdraw early in the term?'
+  document: University_Tuition_Policies.md (UNI-TUITION-2026-01)
+  expected: section 6.1  ->  PASS
+  #1 section 6.1 - Early withdrawal (Refunds and withdrawals), score 12.2412
+       A student who formally withdraws within 14 calendar days of the
+       term start may be eligible for a refund of 80% of tuition
+       payments associated with that term, subject to administrative
+       review.
+  #2 section 6.3 - Refund processing (Refunds and withdrawals), score 4.0781
+       Approved refunds are generally processed within 15 business
+       days. This document does not provide refund status for any
+       individual student.
+  #3 section 6.2 - Later withdrawal (Refunds and withdrawals), score 3.1102
+       After the 14-day period, refunds are reviewed individually and
+       are not guaranteed. The AI assistant should direct students to
+       the university finance office for a formal decision.
+------------------------------------------------------------------------------
+Test 4: Late fee
+  query:    'What is the late fee if I pay after the deadline?'
+  document: University_Tuition_Policies.md (UNI-TUITION-2026-01)
+  expected: section 4.1  ->  PASS
+  #1 section 4.1 - Late fee rule (Late fees), score 7.5102
+       A 2% one-time late fee may be assessed on an overdue amount
+       after the applicable due date, unless an approved exception
+       applies. This document describes the rule but does not
+       calculate or post fees automatically.
+  #2 section 4.2 - Example (Late fees), score 6.7415
+       If $1,000 is overdue and no exception applies, the illustrative
+       late fee is $20. Whether a fee has actually been posted must be
+       checked in the tuition system.
+  #3 section 4.3 - Exceptions (Late fees), score 5.1321
+       Students with a documented university-approved deferral may be
+       exempt. Approval status is not available from this document.
+------------------------------------------------------------------------------
+Extra: empty query
+  is_error: True  ->  PASS
+  message:  Error executing tool search_tuition_policies: query must not be empty. Ask a question about tuition policies, e.g. 'late fee'.
+==============================================================================
+Result: ALL PASSED

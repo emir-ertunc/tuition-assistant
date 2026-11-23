@@ -1,0 +1,137 @@
+<!--
+  API level policy of "Tuition API v1" in Azure API Management (Consumption tier).
+
+  Names in double curly braces are APIM named values (created by deploy/azure-gateway.ps1),
+  so the secrets are not in this file:
+    jwt-signing-key  base64 of the JWT_SECRET of the api (HS256)
+    gateway-key      shared key, the api refuses /api calls without it (X-Gateway-Key)
+    swagger-origin   address of the api's swagger page, allowed for CORS
+
+  What the gateway does:
+    /api/v1/mobile/*   open (the 3 queries per student per day limit is counted by the api per
+                       student number and the 429 is passed through; the Consumption tier has no
+                       quota-by-key / rate-limit-by-key policy)
+    /api/v1/auth/*     open, except /auth/me which needs a valid token
+    /api/v1/banking/*  valid token (401) + role BANK or STUDENT (403)
+    /api/v1/admin/*    valid token (401) + role ADMIN (403)
+  Errors from the gateway use the same json format as the api: {"code", "message", "details"}.
+-->
+<policies>
+    <inbound>
+        <base />
+        <cors allow-credentials="false">
+            <allowed-origins>
+                <origin>{{swagger-origin}}</origin>
+            </allowed-origins>
+            <allowed-methods>
+                <method>GET</method>
+                <method>POST</method>
+                <method>OPTIONS</method>
+            </allowed-methods>
+            <allowed-headers>
+                <header>*</header>
+            </allowed-headers>
+        </cors>
+        <set-variable name="path" value="@(context.Request.OriginalUrl.Path.ToLower())" />
+        <choose>
+            <when condition="@(((string)context.Variables["path"]).Contains("/api/v1/banking/"))">
+                <validate-jwt header-name="Authorization" require-scheme="Bearer" failed-validation-httpcode="401" failed-validation-error-message="token is missing or not valid">
+                    <issuer-signing-keys>
+                        <key>{{jwt-signing-key}}</key>
+                    </issuer-signing-keys>
+                    <audiences>
+                        <audience>tuition-clients</audience>
+                    </audiences>
+                    <issuers>
+                        <issuer>tuition-api</issuer>
+                    </issuers>
+                </validate-jwt>
+                <validate-jwt header-name="Authorization" require-scheme="Bearer" failed-validation-httpcode="403" failed-validation-error-message="this operation needs one of these roles: BANK, STUDENT">
+                    <issuer-signing-keys>
+                        <key>{{jwt-signing-key}}</key>
+                    </issuer-signing-keys>
+                    <required-claims>
+                        <claim name="role" match="any">
+                            <value>BANK</value>
+                            <value>STUDENT</value>
+                        </claim>
+                    </required-claims>
+                </validate-jwt>
+            </when>
+            <when condition="@(((string)context.Variables["path"]).Contains("/api/v1/admin/"))">
+                <validate-jwt header-name="Authorization" require-scheme="Bearer" failed-validation-httpcode="401" failed-validation-error-message="token is missing or not valid">
+                    <issuer-signing-keys>
+                        <key>{{jwt-signing-key}}</key>
+                    </issuer-signing-keys>
+                    <audiences>
+                        <audience>tuition-clients</audience>
+                    </audiences>
+                    <issuers>
+                        <issuer>tuition-api</issuer>
+                    </issuers>
+                </validate-jwt>
+                <validate-jwt header-name="Authorization" require-scheme="Bearer" failed-validation-httpcode="403" failed-validation-error-message="this operation needs one of these roles: ADMIN">
+                    <issuer-signing-keys>
+                        <key>{{jwt-signing-key}}</key>
+                    </issuer-signing-keys>
+                    <required-claims>
+                        <claim name="role" match="any">
+                            <value>ADMIN</value>
+                        </claim>
+                    </required-claims>
+                </validate-jwt>
+            </when>
+            <when condition="@(((string)context.Variables["path"]).EndsWith("/api/v1/auth/me"))">
+                <validate-jwt header-name="Authorization" require-scheme="Bearer" failed-validation-httpcode="401" failed-validation-error-message="token is missing or not valid">
+                    <issuer-signing-keys>
+                        <key>{{jwt-signing-key}}</key>
+                    </issuer-signing-keys>
+                    <audiences>
+                        <audience>tuition-clients</audience>
+                    </audiences>
+                    <issuers>
+                        <issuer>tuition-api</issuer>
+                    </issuers>
+                </validate-jwt>
+            </when>
+        </choose>
+        <!-- the api only accepts /api calls that have this header -->
+        <set-header name="X-Gateway-Key" exists-action="override">
+            <value>{{gateway-key}}</value>
+        </set-header>
+    </inbound>
+    <backend>
+        <base />
+    </backend>
+    <outbound>
+        <base />
+        <set-header name="X-Gateway-Key" exists-action="delete" />
+        <set-header name="X-Api-Gateway" exists-action="override">
+            <value>tuition-apim</value>
+        </set-header>
+    </outbound>
+    <on-error>
+        <base />
+        <choose>
+            <when condition="@(context.LastError != null && (context.LastError.Source ?? "").ToLower().Contains("validate-jwt"))">
+                <return-response>
+                    <set-status code="@(context.Response.StatusCode == 403 ? 403 : 401)" reason="@(context.Response.StatusCode == 403 ? "Forbidden" : "Unauthorized")" />
+                    <set-header name="Content-Type" exists-action="override">
+                        <value>application/json</value>
+                    </set-header>
+                    <set-header name="X-Api-Gateway" exists-action="override">
+                        <value>tuition-apim</value>
+                    </set-header>
+                    <set-body>@{
+                        var forbidden = context.Response.StatusCode == 403;
+                        return new JObject(
+                            new JProperty("code", forbidden ? "FORBIDDEN" : "UNAUTHORIZED"),
+                            new JProperty("message", context.LastError.Message),
+                            new JProperty("details", new JArray("gateway: " + context.LastError.Reason))
+                        ).ToString();
+                    }</set-body>
+                </return-response>
+            </when>
+        </choose>
+    </on-error>
+</policies>
