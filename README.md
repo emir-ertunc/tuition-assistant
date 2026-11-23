@@ -13,7 +13,7 @@ results with policy section references.
 | What | Where |
 |---|---|
 | Source code | https://github.com/emir-ertunc/tuition-assistant |
-| Demo video | VIDEO_URL (to be added) |
+| Demo video | https://drive.google.com/file/d/1HxHp_0utfRJoRfetSk7Xe7c6e6bT-XMa/view?usp=drive_link |
 | API Gateway (all REST calls) | https://tuition-apim-ee7141.azure-api.net/api/v1 |
 | Swagger UI of the Tuition API | https://tuition-api-ee7141.azurewebsites.net/docs |
 | OpenAPI specification | https://tuition-api-ee7141.azurewebsites.net/openapi.json |
@@ -120,7 +120,8 @@ Tools given to the LLM:
 | Confirmed simulated payment | [docs/agent-scenarios.md](docs/agent-scenarios.md#4-payment-with-explicit-confirmation) (500.00 for 2026-FALL, remaining 2500.00) |
 | 3 distinct MCP retrieval tests | [docs/mcp-retrieval-tests.txt](docs/mcp-retrieval-tests.txt) |
 | Protected gateway route + error response | [gateway/README.md](gateway/README.md#checked-on-the-deployed-gateway) |
-| Unit tests run | [docs/unit-test-results.txt](docs/unit-test-results.txt) and the commands below |
+| Unit tests run | [docs/unit-test-results.txt](docs/unit-test-results.txt), [screenshot](docs/screenshots/unit-tests.png) and the commands below |
+| Demo video | [Google Drive](https://drive.google.com/file/d/1HxHp_0utfRJoRfetSk7Xe7c6e6bT-XMa/view?usp=drive_link) |
 
 Agent scenarios (run against the deployed gateway and MCP server, `gemini-3.5-flash-lite`):
 
@@ -130,6 +131,18 @@ Agent scenarios (run against the deployed gateway and MCP server, `gemini-3.5-fl
 | What is my balance? | `query_tuition` | 6000.00 USD (2026-FALL 3000.00, 2027-SPRING 3000.00) |
 | Can I pay my outstanding balance in installments? | `search_tuition_policies` + `query_tuition` | balance ≥ $300 → may request up to 3 installments, subject to approval (Sections 3.1, 3.4) |
 | Pay 500 for the fall term | `pay_tuition` (after `yes`) | SUCCESS, remaining 2500.00 |
+
+![Agent scenarios](docs/screenshots/agent-scenarios.png)
+
+Protected route through the gateway (`deploy/check-gateway.ps1`, 401 without token / 200 with token):
+
+![Gateway protected route](docs/screenshots/gateway-protected-route.png)
+
+Unit tests:
+
+![Unit tests](docs/screenshots/unit-tests.png)
+
+More screenshots (Swagger): [docs/screenshots](docs/screenshots).
 
 ## Test data and how to reproduce
 

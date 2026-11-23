@@ -2,10 +2,8 @@
 
 | File | What it shows |
 |---|---|
-| `01-mcp-only.png` | chat: "When is the payment deadline?" → `search_tuition_policies` trace + answer with sections |
-| `02-api-only.png` | chat: "What is my balance?" → `query_tuition` trace + answer |
-| `03-combined.png` | chat: "Can I pay my outstanding balance in installments?" → both tools + answer |
-| `04-payment-confirmation.png` | chat: "Pay 500 for the fall term" → confirmation box, `yes`, SUCCESS |
-| `05-swagger.png` | Swagger UI of the Tuition API |
-| `06-gateway-protected-route.png` | protected route through the gateway: 401 without token, 200 with token |
-| `07-unit-tests.png` | `pytest` output of the three services |
+| [agent-scenarios.png](agent-scenarios.png) | chat as student 20210001 through the Azure gateway + MCP server: MCP only ("When is the payment deadline?"), API only ("What is my balance?"), combined ("Can I pay my outstanding balance in installments?") and the payment with the confirmation box (`yes` → SUCCESS, remaining 2500.00) |
+| [gateway-protected-route.png](gateway-protected-route.png) | `deploy/check-gateway.ps1`: protected banking route through the gateway with a token → 200 (`X-Api-Gateway: tuition-apim`); the 401 without a token is in [gateway/README.md](../../gateway/README.md#example-error-response-through-the-gateway) |
+| [swagger-1.png](swagger-1.png) | Swagger UI of the deployed Tuition API (versioned `/api/v1` routes per client) |
+| [swagger-2.png](swagger-2.png) | Swagger UI: health route and the DTO schemas |
+| [unit-tests.png](unit-tests.png) | `pytest` of the three services |
